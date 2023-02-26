@@ -20,6 +20,15 @@
             color: #fff;
             padding: 0px;
         }
+        #chatbox input[type="textarea"] {
+            width: 100%;
+            height: 200px;
+            padding: 1px;
+            text-align: start;
+            border: none;
+            border-top: 1px solid #ddd;
+            font-size: 16px;
+        }   
         #chatbox .messages {
             max-height: 1000px;
             overflow: auto;
@@ -70,30 +79,71 @@
             var messages = document.getElementById('messages');
             messages.innerHTML += '<div class="message"><div class="sender">You:</div><div class="text">' + message + '</div></div>';
             messages.scrollTop = messages.scrollHeight;
+            var examples = document.getElementById('examples').value;
 
             // 将消息发送到服务器
             var xhr = new XMLHttpRequest();
             xhr.open('POST', '/chat');
             xhr.setRequestHeader('Content-Type', 'application/json');
+            var command_body = document.getElementById('command_body');
             xhr.onload = function() {
                 var response = JSON.parse(xhr.responseText);
 
                 // 将机器人的回复显示在聊天框中
                 messages.innerHTML += '<div class="message"><div class="sender">Chatbot:</div><div class="text">' + response.answer + '</div></div>';
                 messages.scrollTop = messages.scrollHeight;
+                var ret = null;
+                try {
+                    ret = JSON.parse(response.answer);
+                } catch {}
+                // If this is a command
+                command_body.value = response.answer;
+                // command_body.value = JSON.stringify(ret);
+                // if (ret !== null && typeof ret === 'object' && ret['org'] != null) {
+                //     command_body.value = response.answer;
+                // } else {
+                //     command_body.value = '';
+                //     // command_body.value = response.answer;
+                // }
             };
-            xhr.send(JSON.stringify({ message: message }));
+            xhr.send(JSON.stringify({ message: message, examples: examples }));
 
             // 清空输入框
             document.getElementById('message').value = '';
+        }
+
+        // 触发命令
+        function sendCommand() {
+            // 获取用户输入的消息
+            var cmd = document.getElementById('command_body').value;
+            var command_body = null;
+            try {
+                command_body = JSON.parse(cmd);
+            } catch(Exception) {
+                command_body = cmd;
+            }
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/command');
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onload = function() {
+            };
+            xhr.send(JSON.stringify({ "command": command_body }));
+
+            // 清空输入框
+            document.getElementById('command_body').value = '';
         }
     </script>
 </head>
 <body>
     <div id="chatbox">
         <div class="header">Demo of response</div>
+        <div><input type="text" id="examples" placeholder="Type your examples here"></div>
         <div class="messages" id="messages"></div>
         <div class="footer">
-            <input type="text" id="message" placeholder="Type your message here">
+            <input label="Message:" type="text" id="message" placeholder="Type your message here">
             <input type="submit" value="Send" onclick="sendMessage()">
+            <input label="Command body:" type="text" id="command_body" placeholder="This is the command body to send">
+            <input type="submit" value="Execute" onclick="sendCommand()">
         </div>
+    </div>
+</body>

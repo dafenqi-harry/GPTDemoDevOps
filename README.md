@@ -29,3 +29,7 @@ pip install -r requirements.txt
 
 flask run
 ```
+
+beijing=>北京
+构建org1里面的项目prj1 => {"org":'org1',"proj":'prj1',"pipeline":1}, 用流水线2构建org2里面的项目prj2 => {"org":'org2',"proj":'prj1',"pipeline":2}
+构建secdemo0166里的项目devopsdemo =>
